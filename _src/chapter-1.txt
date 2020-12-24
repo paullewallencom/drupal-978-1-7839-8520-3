@@ -1,0 +1,17 @@
+======================
+hook_install
+----------------------
+
+<?php /** * Implements hook_install(). */function my_module_install() {  // Set site name.  variable_set(‘site_name’, ‘Configuration Management’);}?>
+
+======================
+hook_node_info
+----------------------
+
+<?php/** * Implements hook_node_info(). */function cm_blog_node_info() {  return array(    'blog' => array(      'name' => t('Blog'),      ‘base’ => ‘blog’,      'description' =>t('Use for multi-user blogs.’),    ),  );}?>
+
+======================
+system.site.yml
+----------------------
+
+name: ‘Configuration Management in Drupal 8’mail: 'info@example.com'slogan: ''page:  403: ''  404: ''  front: userlangcode: en

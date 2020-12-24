@@ -1,0 +1,18 @@
+=====================
+custom code (page 5)
+---------------------
+
+items_per_page: 20
+description: ''
+langcode: en
+
+# Schema for the configuration files of the CM Example module.
+
+cm_example.settings:
+  type: mapping
+  label: 'CM Example settings'
+  mapping:
+    description:
+      type: string
+      label: 'Item description'
+      translatable: true

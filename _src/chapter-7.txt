@@ -1,0 +1,217 @@
+=====================
+custom code (page 1)
+---------------------
+
+<?php
+/**
+ * Page callback for example settings form.
+ */
+function cm_example_settings() {
+  $form = array();
+
+  // Saved/default value of variable “items_per_page”.
+  $items_per_page = variable_get(‘cm_example_items_per_page’, 20);
+  // Create the corresponding form element.
+  $form[‘items_per_page’] = array(
+    ‘#type’ => ‘textfield’,
+    ‘#title’ => t(‘Items per page’),
+    ‘#description’ => t(‘Enter the number of items per page.’),
+    ‘#default_value’ => $items_per_page,
+    '#element_validate' => array('element_validate_integer'),
+  );
+
+  // Saved/default value of variable “header”.
+  $display_header = variable_get(‘cm_example_header’, TRUE);
+  $form[‘header’] = array(
+    ‘#type’ => ‘checkbox’,
+    ‘#title’ => t(‘Display list header’),
+    ‘#default_value’ => $display_header,
+  );
+
+  // Create form actions.
+  $form[‘actions’][‘#type’] = ‘actions’;
+  $form[‘actions’][‘submit’] = array(
+    ‘#type’ => ‘submit’,
+    ‘#value’ => t(‘Save configuration’),
+  );
+  // Add submit callback.
+  $form[‘#submit’][] = ‘cm_example_settings_submit’;
+  // Use default theme function
+  $form[‘#theme’] = ‘system_settings_form’;
+
+  // Return the form structure to pass to drupal_get_form().
+  return $form;
+}
+?>
+
+
+=====================
+custom code (page 2)
+---------------------
+
+<?php
+/**
+ * Submit callback for example settings.
+ */
+function cm_example_settings_submit($form, &$form_state) {
+  // Remove unnecessary values.
+  form_state_values_clean($form_state);
+
+  // Save the variables (preprend the names with the module
+  // name to prevent naming conflicts).
+  $items_per_page = $form_state[‘values’][‘items_per_page’];
+  variable_set(‘cm_example_items_per_page’, $items_per_page);
+  $display_header = $form_state[‘values’][‘ header’];
+  variable_set(‘cm_example_header’, $display_header);
+
+  drupal_set_message(‘The configuration options have been saved.’);
+}
+?>
+
+
+=====================
+custom code (page 3)
+---------------------
+
+# Configuration for the CM Example module.
+items_per_page: 20
+display_header: 1
+
+
+# Schema for the configuration files of the CM Example module.
+cm_example.settings:
+  type: mapping
+  label: 'CM Example settings'
+  mapping:
+    items_per_page:
+      type: integer
+      label: ‘Items per page’
+    display_header:
+      type: boolean
+      label: 'Display list header'
+
+
+=====================
+custom code (page 4)
+---------------------
+
+<?php
+// Drupal 7:
+$items_per_page = variable_get(‘cm_example_items_per_page’, 20);
+
+// Drupal 8:
+$items_per_page = \Drupal::config(‘cm_example.settings’)->get(‘items_per_page’);
+?>
+
+<?php
+// Drupal 7:
+variable_set(‘cm_example_items_per_page’, $items_per_page);
+
+// Drupal 8:
+\Drupal::config(‘cm_example.settings’)
+  ->set(‘items_per_page’, $items_per_page)
+  ->save();
+?>
+
+<?php
+// Load configuration object.
+$config = \Drupal::config(‘cm_example.settings’);
+// Access single configuration value.
+$items_per_page = $config->get(‘items_per_page’);
+$display_header = $config->get(‘display_header’);
+
+// Modify values.
+$items_per_page = 10;
+$display_header = FALSE;
+
+// Save configuration value.
+$config->set(‘items_per_page’, $items_per_page)->save();
+?>
+
+
+=====================
+custom code (page 5)
+---------------------
+
+name: news
+label: 'News (240x160)'
+effects:
+  148b5b70-be82-11e3-b1b6-0800200c9a66:
+    id: image_scale
+    data:
+      width: 240
+      height: 160
+      upscale: true
+    weight: 0
+    uuid: 148b5b70-be82-11e3-b1b6-0800200c9a66
+langcode: en
+
+<?php
+// Drupal 7:
+// Load the Image Style.
+if (($style = image_style_load(‘news’)) !== FALSE) {
+  // List all associated effects for this style.
+  $effects = image_style_effects($style);
+  // Assume the effect has ieid “1”.
+  $effect_width = $effects[1][‘data’][‘width’];
+}
+
+// Drupal 8:
+// Load entity of type "Image Style".
+$style = entity_load(‘image_style’, ‘news’);
+// Get the effect definition.
+$effect_scale = $style->getEffect(‘148b5b70-be82-11e3-b1b6-0800200c9a66’);
+// Get dimensions of selected effect.
+$dimensions = array(
+  'height' => 0,
+  'width' => 0,
+);
+$effect_scale->transformDimensions($dimensions);
+// Get the value of property “width”.
+$effect_width = $dimensions['width'];
+?>
+
+
+=====================
+custom code (page 7)
+---------------------
+
+id: d7_cm_example_settings
+label: Drupal 7 CM example configuration
+migration_groups:
+  - CM example
+source:
+  plugin: variable
+  variables:
+    - items_per_page
+    - header
+process:
+  items_per_page: items_per_page
+  display_header: header
+destination:
+  plugin: config
+  config_name: cm_example.settings
+
+
+=====================
+custom code (page 8)
+---------------------
+
+process:
+  uid:
+    plugin: migration
+    id: users
+    source: author
+
+
+======================
+custom code (page 13)
+----------------------
+
+# Example for Drupal 7 to Drupal 8 migration
+d7_cm_example_settings
+d7_cm_example_block
+d7_block
+d7_filter_format
+
+

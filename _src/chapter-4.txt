@@ -1,0 +1,590 @@
+=======================
+system.admin.inc (D7)
+-----------------------
+
+<?php
+// The status message depends on whether an admin theme is currently in use:
+// a value of 0 means the admin theme is set to be the default theme.
+$admin_theme = variable_get('admin_theme', 0);
+...
+// Set the default theme.
+variable_set('theme_default', $theme);
+?>
+
+
+=======================
+system.admin.inc (D8)
+-----------------------
+
+<?php
+// The status message depends on whether an admin theme is currently in use:
+// a value of 0 means the admin theme is set to be the default theme.
+$admin_theme = \Drupal::config('system.theme')->get('admin');
+...
+// Set the default theme.
+\Drupal::config('system.theme')
+  ->set('default', $theme)
+  ->save();
+?>
+
+
+=======================
+system.theme.yml
+-----------------------
+
+admin: '0'
+enabled:
+  stark: '0'
+default: stark
+
+
+
+=======================
+custom code: page 3
+-----------------------
+
+<?php
+array(
+  ‘stark’ => ‘0’,
+);
+?>
+
+
+<?php
+array(
+  ‘admin => ‘0’,
+  ‘enabled’ => array(
+    ‘stark’ => ‘0’,
+  ),
+  ‘default’ => ‘stark’,
+);
+?>
+
+
+=======================
+custom code: page 4
+-----------------------
+
+<?php
+// Set multiple configuration values at once.
+\Drupal::config(‘system.theme’)->set(array(
+  ‘enabled’ => array(
+    ‘stark’ => ‘0’,
+    ‘my_custom_theme’ => ‘1’,
+  ),
+  ‘default’ => ‘my_custom_theme’,
+))->save();
+?>
+
+
+=======================
+system.theme.yml
+-----------------------
+
+admin: '0'
+enabled:
+  stark: '0'
+  my_custom_theme: ‘1’
+default: my_custom_theme
+
+
+=======================
+custom code: page 5
+-----------------------
+
+<?php
+// Load configuration object.
+$config = \Drupal::config(‘system.theme’);
+// Remove single value from configuration object.
+$config->clear(‘enabled.stark’)->save();
+$enabled = $config->get(‘enabled’);
+?>
+
+<?php
+// Load configuration object.
+$config = \Drupal::config(‘system.theme’);
+// Remove entire configuration object.
+$config->delete();
+$enabled = $config->get(‘enabled’);
+?>
+
+
+=======================
+custom code: page 6
+-----------------------
+
+<?php
+\Drupal::config(‘system.theme')->set('admin', '1')->save();
+\Drupal::config('system.theme')->set('default', 'seven')->save();
+?>
+
+<?php
+$config = \Drupal::config(‘system.theme’);
+$config->set(‘admin’, ‘1’);
+$config->set('default', 'seven');
+$config->save();
+?>
+
+<?php
+class MyModuleConfigEventSubscriber implements EventSubscriberInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  static function getSubscribedEvents() {
+    $events = array();
+    $events[‘config.save’][] = array(‘onConfigSave’, 40);
+    return $events;
+  }
+
+  /**
+   * Custom callback to react to saving of configuration objects.
+   */
+  public function onConfigSave(ConfigEvent $event) {
+     // Do some magic.
+  }
+}
+?>
+
+
+=======================
+custom code: page 8
+-----------------------
+
+<?php
+// Develop environment.
+$conf['environment_indicator_overwritten_name'] = 'develop';
+$conf[‘environment_indicator_overwritten_color’] = ‘#ff940f’;
+?>
+
+<?php
+// Get system site maintenance message text. This value may be overriden by
+// default from global $conf (as well as translations, see below).
+$message = \Drupal::config('system.maintenance')->get('message');
+?>
+
+<?php
+global $conf;
+$conf['system.maintenance']['message'] = 'Sorry, our site is currently down.';
+?>
+
+
+=======================
+custom code: page 9
+-----------------------
+
+<?php
+// Enable debugging of Twig templates.
+$settings[‘twig_debug’] = TRUE;
+?>
+
+<?php
+$debug = settings()->get('twig_debug', FALSE);
+?>
+
+
+=======================
+custom code: page 10
+-----------------------
+
+<?php
+// Load preferred user language.
+$language = language_load($account->getPreferredLangcode());
+// Set configuration language.
+\Drupal::configFactory()->setLanguage($language);
+?>
+
+<?php
+// Store original language.
+$language_original = \Drupal::configFactory()->getLanguage();
+// Load preferred user language.
+$language = language_load($account->getPreferredLangcode());
+// Set configuration language.
+\Drupal::configFactory()->setLanguage($language);
+// Load the localized configuration.
+$mail_config = \Drupal::config(‘user.mail’);
+// Do some stuff, i.e. send localized emails.
+...
+// Set the language back to its original value.
+\Drupal::configFactory()->setLanguage($language_original);
+?>
+
+
+=======================
+custom code: page 11
+-----------------------
+
+<?php
+/**
+ * @file
+ * Contains \Drupal\config_example\EventSubscriber\ConfigModuleOverrideSubscriber.
+ */
+namespace Drupal\config_example\EventSubscriber;
+use Drupal\Core\Config\ConfigModuleOverridesEvent;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
+/**
+ * Example configuration override.
+ */
+class ConfigModuleOverrideSubscriber implements EventSubscriberInterface {
+  public function onConfigModuleOverride(ConfigModuleOverridesEvent $event) {
+}
+
+/**
+ * Registers the methods in this class that should be listeners.
+ *
+ * @return array
+ *   An array of event listener definitions.
+ */
+static function getSubscribedEvents() {
+  $events['config.module.overrides'][] = array('onConfigModuleOverride', 40);
+    return $events;
+  }
+}
+?>
+
+
+=======================
+custom code: page 12
+-----------------------
+
+<?php
+public function onConfigModuleOverride(ConfigModuleOverridesEvent $event) {
+  $names = $event->getNames();
+  if (in_array('system.site', $names)) {
+    $event->setOverride('system.site', array('name' => 'Overridden site name'));
+  }
+}
+?>
+
+
+=======================
+custom code: page 13
+-----------------------
+
+<?php
+protected function config($name) {
+  $old_state = $this->configFactory->getOverrideState();
+  $this->configFactory->setOverrideState(FALSE);
+  $config = $this->configFactory->get($name);
+  $this->configFactory->setOverrideState($old_state);
+  return $config;
+}
+?>
+
+<?php
+/**
+ * @file
+ * Contains \Drupal\example\Entity\ExampleInterface.
+ */
+
+namespace Drupal\example;
+use Drupal\Core\Config\Entity\ConfigEntityInterface;
+
+/**
+ * Provides an interface defining an example entity.
+ */
+interface ExampleInterface extends ConfigEntityInterface {
+
+  /**
+   * Returns the value of a property.
+   *
+   * @param string $name
+   *   The property name.
+   *
+   * @return mixed
+   *   The property value.
+   */
+  public function getProperty($name);
+
+  /**
+   * Sets a property on the entity.
+   *
+   * @param string $name
+   *   The property name.
+   * @param mixed $value
+   *   The property value.
+   */
+  public function setProperty($name, $value);
+}
+?>
+
+
+=======================
+custom code: page 14
+-----------------------
+
+<?php
+/**
+ * Defines the example entity class.
+ *
+ * @ConfigEntityType(
+ *   id = "example",
+ *   label = @Translation("Example"),
+ *   controllers = {
+ *     "access" = "Drupal\example\ExampleAccessController",
+ *     "list" = "Drupal\example\ExampleListController",
+ *     "form" = {
+ *       "add" = "Drupal\example\ExampleFormController",
+ *       "edit" = "Drupal\example\ExampleFormController",
+ *       "delete" = "Drupal\example\Form\ExampleDeleteForm"
+ *     }
+ *   },
+ *   config_prefix = "example",
+ *   entity_keys = {
+ *     "id" = "id",
+ *     "uuid" = "uuid",
+ *     "label" = "label"
+ *   },
+ *   links = {
+ *     "delete-form" = "example.example_delete",
+ *     "edit-form" = "example.example_edit",
+ *   }
+ * )
+ */
+?>
+
+
+=======================
+custom code: page 15
+-----------------------
+
+<?php
+class Example extends Entity implements ExampleInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function get($property_name) {
+    return isset($this->{$property_name}) ? $this->{$property_name} : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function set($property_name, $value) {
+    if ($this instanceof EntityWithPluginBagInterface) {
+      if ($property_name == $this->pluginConfigKey) {
+        // If external code updates the settings, pass it along to the plugin.
+        $this->getPluginBag()->setConfiguration($value);
+      }
+    }
+
+    $this->{$property_name} = $value;
+  }
+}
+?>
+
+
+=======================
+custom code: page 16
+-----------------------
+
+<?php
+/**
+ * @file
+ * Contains \Drupal\contact\ExampleAccessController.
+ */
+
+namespace Drupal\example;
+
+use Drupal\Core\Entity\EntityAccessController;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Session\AccountInterface;
+
+/**
+ * Defines an access controller for the example entity.
+ *
+ * @see \Drupal\example\Entity\Example.
+ */
+class ExampleAccessController extends EntityAccessController {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function checkAccess(EntityInterface $entity, $operation, $langcode, AccountInterface $account) {
+    if ($operation == 'view') {
+      // Allow access for users with proper permission only.
+      return $account->hasPermission('access example entity');
+    }
+    elseif ($operation == 'delete' || $operation == 'update') {
+      return $account->hasPermission('administer example entity');
+    }
+
+    return parent::checkAccess($entity, $operation, $langcode, $account);
+  }
+
+}
+?>
+
+
+=======================
+custom code: page 17
+-----------------------
+
+<?php
+/**
+ * Definition of Drupal\example\ExampleListController.
+ */
+
+namespace Drupal\example;
+
+use Drupal\Component\Utility\String;
+use Drupal\Core\Config\Entity\ConfigEntityListController;
+use Drupal\Core\Entity\EntityInterface;
+
+/**
+ * Provides a listing of example entities.
+ */
+class ExampleListController extends ConfigEntityListController {
+}
+?>
+
+
+=======================
+custom code: page 18
+-----------------------
+
+<?php
+/**
+ * Overrides Drupal\Core\Entity\EntityListController::buildHeader().
+ */
+public function buildHeader() {
+  $header['label'] = t('Label');
+  $header['id'] = $this->t('Machine name');
+  return $header + parent::buildHeader();
+}
+
+/**
+ * Overrides Drupal\Core\Entity\EntityListController::buildRow().
+ */
+public function buildRow(EntityInterface $entity) {
+  $row[‘label'] = $this->getLabel($entity);
+  $row[‘id’] = $entity->id();
+  return $row + parent::buildRow($entity);
+}
+?>
+
+<?php
+/**
+ * @file
+ * Definition of Drupal\example\ExampleFormController.
+ */
+
+namespace Drupal\example;
+
+use Drupal\Core\Entity\EntityFormController;
+
+/**
+ * Base form controller for example edit forms.
+ */
+class ExampleFormController extends EntityFormController {
+}
+?>
+
+
+=======================
+custom code: page 19
+-----------------------
+
+<?php
+/**
+ * Overrides Drupal\Core\Entity\EntityFormController::form().
+ */
+public function form(array $form, array &$form_state) {
+  $form = parent::form($form, $form_state);
+
+  $entity = $this->entity;
+  $default = \Drupal::config('example.settings')->get('default');
+
+  $form['label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Label'),
+    '#maxlength' => 255,
+    '#default_value' => $entity->label(),
+    '#required' => TRUE,
+  );
+  $form['id'] = array(
+    '#type' => 'machine_name',
+    '#default_value' => $example->id(),
+    '#machine_name' => array(
+      'exists' => 'example_load',
+    ),
+    '#disabled' => !$example->isNew(),
+  );
+
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+
+  return $form;
+}
+?>
+
+
+===================================
+example.example.info.yml (page 20)
+-----------------------------------
+
+name: Example
+type: module
+description: 'Example configuration entity type.'
+core: 8.x
+
+
+======================================
+example/example.routing.yml (page 20)
+--------------------------------------
+
+example.list:
+  path: '/admin/config/example'
+  defaults:
+    _entity_list: 'example'
+    _title: 'Example Configuration'
+  requirements:
+    _permission: 'administer site configuration'
+example.add:
+  path: '/admin/config/example/add'
+  defaults:
+    _entity_form: example.add
+    _title: 'Add example'
+  requirements:
+    _entity_access: 'example.add'
+example.edit:
+  path: '/admin/config/example/{example}'
+  defaults:
+    _entity_form: example.edit
+    _title: 'Edit example'
+  requirements:
+    _entity_access: 'example.edit'
+
+
+=================================
+example/example.module (page 20)
+---------------------------------
+
+<?php
+function example_menu_link_defaults() {
+  $links = array();
+  $links ['admin/config/example'] = array(
+    'link_title' => 'Example',
+    'description' => 'Configure examples',
+    'route_name' => 'example.list',
+  );
+  return $links ;
+}
+?>
+
+
+
+============================================
+example/example.local_actions.yml (page 21)
+--------------------------------------------
+
+example.add:
+  route_name: example.add
+  title: 'Add example'
+  appears_on:
+    - example.list

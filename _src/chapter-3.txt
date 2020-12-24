@@ -1,0 +1,32 @@
+=======================
+system.maintenance.yml
+-----------------------
+
+message: '@site is currently under maintenance. We should be back shortly. Thank you for your patience.'
+langcode: en
+
+=======================
+system.schema.yml
+-----------------------
+
+system.maintenance:
+  type: mapping
+  label: 'Maintenance mode'
+  mapping:
+    enabled:
+      type: boolean
+      label: 'Put site into maintenance mode'
+    message:
+      type: text
+      label: 'Message to display when in maintenance mode'
+
+=======================
+default.settings.php
+-----------------------
+
+<?php
+$config_directories = array(
+  CONFIG_ACTIVE_DIRECTORY => '/var/www/d8/config/active', // folder outside the webroot
+  CONFIG_STAGING_DIRECTORY => '/var/www/d8/config/staging', // folder outside the webroot
+);
+?>
